@@ -4,7 +4,7 @@ Data and analyses of a survey done by Springer Nature.
 
 ## HTML report
 
-An HTML formatted report can be found [https://penn-state-open-science.github.io/springer-nature-survey]. [RMarkdown source](index.Rmd).
+An HTML formatted report can be found [here](https://penn-state-open-science.github.io/springer-nature-survey). [RMarkdown source](index.Rmd).
 
 ## References
 
