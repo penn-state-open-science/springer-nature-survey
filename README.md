@@ -1,6 +1,13 @@
 # springer-nature-survey
-Data and analyses of a survey done by Springer Nature
+
+Data and analyses of a survey done by Springer Nature.
+
+## HTML report
+
+An HTML formatted report can be found [https://penn-state-open-science.github.io/springer-nature-survey]. [RMarkdown source](index.Rmd).
 
 ## References
 
-- <https://figshare.com/articles/dataset/Practical_challenges_for_researchers_in_data_sharing_-_Springer_Nature_survey_data_anonymised_/5971387>
+- Astell, Mathias, Iain Hrynaszkiewicz, Katie Allin, Dan Penny, Mithu Lucraft, Grace Baynes, and Scientific Data Admin. 2018. “Practical Challenges for Researchers in Data Sharing - Springer Nature Survey Data (Anonymised).” https://doi.org/10.6084/m9.figshare.5971387.v1.
+
+- Stuart, David, Grace Baynes, Hrynaszkiewicz Iain, Allin Katie, Dan Penny, Lucraft Mithu, and Mathias Astell. 2018. “Whitepaper: Practical Challenges for Researchers in Data Sharing.” https://doi.org/10.6084/m9.figshare.5975011.

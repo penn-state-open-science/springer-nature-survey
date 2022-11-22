@@ -3,9 +3,13 @@ title: "Springer Nature survey analysis"
 author: "Rick Gilmore"
 date: "`r Sys.Date()`"
 bibliography: refs.bib
+css: styles.css
 output: 
   html_document:
     code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
 params:
   download_datafile: false
   data_destfile: "data/survey.xlsx"
@@ -73,6 +77,508 @@ names(survey)
 
 ## Clean
 
-## Visualize
+### "`r names(survey)[1]`"
+
+Rename.
+
+```{r}
+names(survey)[1] <- "job_title"
+```
+
+Examine (unique) values.
+
+```{r}
+length(unique(survey$job_title))
+```
+
+That field will require a lot of consolidation and cleaning.
+We'll skip it for now.
+
+### "`r names(survey)[2]`"
+
+Rename (to lowercase).
+
+```{r}
+names(survey)[2] <- tolower(names(survey)[2])
+```
+
+Examine (unique) values.
+
+```{r}
+length(unique(survey$country))
+```
+
+So, there was a broad international set of respondents.
+We'll just show the top of the list.
+
+```{r}
+by_country <- survey %>%
+  dplyr::group_by(., country) %>%
+  dplyr::summarise(., n_resp = n()) %>%
+  dplyr::arrange(., desc(n_resp))
+
+head(by_country) %>%
+  knitr::kable(., format = 'html') %>%
+  kableExtra::kable_classic(.)
+```
+
+### "`r names(survey)[3]`"
+
+Rename.
+
+```{r}
+names(survey)[3] <- "what_do_with_data"
+```
+
+Examine unique responses.
+
+```{r}
+length(unique(survey$what_do_with_data))
+```
+
+```{r}
+unique(survey$what_do_with_data)
+```
+
+These values could be simplified and made lowercase.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(
+    .,
+    what_do_with_data = dplyr::recode(what_do_with_data, "Submit files as supplementary information" = "submit_suppl")
+  ) %>%
+  dplyr::mutate(
+    .,
+    what_do_with_data = dplyr::recode(what_do_with_data, "Deposit files in a repository" = "deposit_repo")
+  ) %>%
+  dplyr::mutate(., what_do_with_data = tolower(what_do_with_data))
+```
+
+```{r}
+xtabs(formula = ~ what_do_with_data, data = survey)
+```
+
+### "`r names(survey)[4]`"
+
+Rename.
+
+```{r}
+names(survey)[4] <- "generate_human_data"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$generate_human_data)
+```
+
+Recode the 0, 1 values as `FALSE`, `TRUE`.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., generate_human_data = as.logical(generate_human_data))
+```
+
+```{r}
+xtabs(formula = ~ generate_human_data, data = survey)
+```
+
+### "`r names(survey)[5]`"
+
+Rename.
+
+```{r}
+names(survey)[5] <- "file_size"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$file_size)
+```
+
+There are a small number of unique values and these have a logical ordering.
+
+```{r}
+ordered_file_sz <- forcats::fct_relevel(survey$file_size, c("<20Mb", "20Mb -100Mb", "100Mb - 1Gb", "1Gb - 5Gb", "5Gb - 20Gb", "20Gb - 50 Gb", ">50Gb"))
+
+survey <- survey %>%
+  dplyr::mutate(., file_size = ordered_file_sz)
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ file_size, data = survey)
+```
+
+### "`r names(survey)[6]`"
+
+Rename.
+
+```{r}
+names(survey)[6] <- "subject_area"
+```
+
+Recode.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., subject_area = tolower(subject_area)) %>%
+  dplyr::mutate(., subject_area = stringr::str_replace(subject_area, " ", "_"))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ subject_area, data = survey)
+```
+
+### "`r names(survey)[7]`"
+
+Rename.
+
+```{r}
+names(survey)[7] <- "molecular_or_gene_data"
+```
+
+Examine unique values
+
+```{r}
+unique(survey$molecular_or_gene_data)
+```
+
+Recode the 0, 1 values as `FALSE`, `TRUE`.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., molecular_or_gene_data = as.logical(molecular_or_gene_data))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ molecular_or_gene_data, data = survey)
+```
+
+### "`r names(survey)[8]`"
+
+Rename.
+
+```{r}
+names(survey)[8] <- "deposit_repo_always"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$deposit_repo_always)
+```
+
+Recode the 0, 1 values as `FALSE`, `TRUE`.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., deposit_repo_always = as.logical(deposit_repo_always))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ deposit_repo_always, data = survey)
+```
+
+### "`r names(survey)[9]`"
+
+Rename.
+
+```{r}
+names(survey)[9] <- "aware_should_deposit"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$aware_should_deposit)
+```
+
+Recode the 0, 1 values as `FALSE`, `TRUE`.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., aware_should_deposit = as.logical(aware_should_deposit))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ aware_should_deposit, data = survey)
+```
+
+### "`r names(survey)[10]`"
+
+Rename.
+
+```{r}
+names(survey)[10] <- "generate_other_types"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$generate_other_types)
+```
+
+Recode the 0, 1 values as `FALSE`, `TRUE`.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., generate_other_types = as.logical(generate_other_types))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ aware_should_deposit, data = survey)
+```
+
+### "`r names(survey)[11]`"
+
+Rename.
+
+```{r}
+names(survey)[11] <- "data_discoverable_importance"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$data_discoverable_importance)
+```
+
+This looks like a numeric score in the range of [0,10].
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = data_discoverable_importance) +
+  geom_bar()
+```
+
+### Questions about "barriers"
+
+It looks like questions 12 to 17 relate to barriers.
+[**Check the report to confirm this**]{.blue}.
+We can proceed with cleaning without confirming.
+
+```{r}
+names(survey)[12] <- "barrier_lack_of_time"
+names(survey)[13] <- "barrier_organizing_data"
+names(survey)[14] <- "barrier_which_repo"
+names(survey)[15] <- "barrier_copyright_licensing"
+names(survey)[16] <- "barrier_sharing_cost"
+names(survey)[17] <- "barrier_other"
+```
+
+Recode values (except for `barrier_other`) as Booleans.
+
+```{r}
+# This is not elegant, but it is clear
+lack_time <- stringr::str_detect(survey$barrier_lack_of_time, "Lack")
+org_data <- stringr::str_detect(survey$barrier_organizing_data, "Organising")
+dont_know_repo <- stringr::str_detect(survey$barrier_which_repo, "repository")
+copyright <- stringr::str_detect(survey$barrier_copyright_licensing, "copyright")
+costs <- stringr::str_detect(survey$barrier_sharing_cost, "Costs")
+
+survey <- survey %>%
+  dplyr::mutate(., barrier_lack_of_time = lack_time,
+                barrier_organizing_data = org_data,
+                barrier_which_repo = dont_know_repo,
+                barrier_copyright_licensing = copyright,
+                barrier_sharing_cost = costs)
+```
+
+```{r}
+xtabs(formula = ~ barrier_lack_of_time, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ barrier_organizing_data, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ barrier_which_repo, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ barrier_copyright_licensing, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ barrier_sharing_cost, data = survey)
+```
+
+The `barrier_other` category is a free-response field.
+Here is a sample of the responses:
+
+```{r}
+head(unique(survey$barrier_other))
+```
+
+### "`r names(survey)[18]`"
+
+Rename.
+
+```{r}
+names(survey)[18] <- "interest_data_dep_service"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey[,18])
+```
+
+This looks like a numeric scale in [0,10].
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = interest_data_dep_service) +
+  geom_bar()
+```
+
+### "`r names(survey)[19]`"
+
+Rename.
+
+```{r}
+names(survey)[19] <- "interest_data_discov_service"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey[,19])
+```
+
+This is also a numeric scale.
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = interest_data_discov_service) +
+  geom_bar()
+```
+### "`r names(survey)[20]`"
+
+Rename.
+
+```{r}
+names(survey)[20] <- "have_data_to_deposit"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$have_data_to_deposit)
+```
+
+Recode this as a logical value.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., have_data_to_deposit = as.logical(have_data_to_deposit))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ have_data_to_deposit, data = survey)
+```
+
+### "`r names(survey)[21]`"
+
+Rename.
+
+```{r}
+names(survey)[21] <- "want_other_help"
+```
+
+Examine unique values.
+
+```{r}
+unique(survey$want_other_help)
+```
+
+Recode this as a logical value.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., want_other_help = as.logical(want_other_help))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ want_other_help, data = survey)
+```
+
+### "`r names(survey)[22]`"
+
+Rename.
+
+```{r}
+names(survey)[22] <- "want_help_with"
+```
+
+This is a free response field, so here are some examples:
+
+```{r}
+head(unique(survey$want_help_with))
+```
+
+### "`r names(survey)[23]`"
+
+Rename.
+
+```{r}
+names(survey)[23] <- "have_addtl_info"
+```
+
+Recode this as a logical value.
+
+```{r}
+survey <- survey %>%
+  dplyr::mutate(., have_addtl_info = as.logical(have_addtl_info))
+```
+
+Summarize.
+
+```{r}
+xtabs(formula = ~ have_addtl_info, data = survey)
+```
+
+### "`r names(survey)[24]`"
+
+Rename.
+
+```{r}
+names(survey)[24] <- "addtl_info"
+```
+
+This is a free reponse field, so here are some examples.
+
+```{r}
+head(unique(survey$addtl_info))
+```
+
+## Save cleaned
+
+```{r}
+readr::write_csv(survey, "data/survey_clean.csv")
+message("Saved cleaned data file: ", "data/survey_clean.csv")
+```
 
 ## References
