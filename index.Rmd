@@ -3,7 +3,9 @@ title: "Springer Nature survey analysis"
 author: "Rick Gilmore"
 date: "`r Sys.Date()`"
 bibliography: refs.bib
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 params:
   download_datafile: false
   data_destfile: "data/survey.xlsx"
@@ -16,18 +18,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Purpose
 
-This document summarizes the results of a survey completed by Springer Nature in 2017.
+This document summarizes the results of a survey completed by Springer Nature in 2018.
 
 The survey results are discussed in [[@Stuart_undated-tw]](https://doi.org/10.6084/m9.figshare.5975011) and the raw data are found in [[@Astell2018-sc]](https://doi.org/10.6084/m9.figshare.5971387.v1).
 
 ## Setup
+
+Ensure that we have the required package dependencies in the local environment.
 
 ```{r}
 require(readxl)
 require(tidyverse)
 library(tidyverse) # for pipe %>% operator
 ```
-
 
 ## Import
 

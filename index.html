@@ -209,6 +209,83 @@ window.buildTabsets = function(tocID) {
 };
 
 </script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia, pre.foldable');
+  rCodeBlocks.each(function() {
+    // skip if the block has fold-none class
+    if ($(this).hasClass('fold-none')) return;
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    var showThis = (show || $(this).hasClass('fold-show')) && !$(this).hasClass('fold-hide');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-bs-toggle', 'collapse') // BS5
+        .attr('data-target', '#' + id)
+        .attr('data-bs-target', '#' + id)   // BS5
+        .attr('aria-expanded', showThis)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // show the div if necessary
+    if (showThis) div.collapse('show');
+
+    // update state of button on show/hide
+    //   * Change text
+    //   * add a class for intermediate states styling
+    div.on('hide.bs.collapse', function () {
+      showCodeText.text('Code');
+      showCodeButton.addClass('btn-collapsing');
+    });
+    div.on('hidden.bs.collapse', function () {
+      showCodeButton.removeClass('btn-collapsing');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+      showCodeButton.addClass('btn-expanding');
+    });
+    div.on('shown.bs.collapse', function () {
+      showCodeButton.removeClass('btn-expanding');
+    });
+
+  });
+
+}
+</script>
 <style type="text/css">.hljs-literal {
 color: #990073;
 }
@@ -354,6 +431,9 @@ display: none;
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -370,6 +450,14 @@ display: none;
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Springer Nature survey analysis</h1>
@@ -382,16 +470,27 @@ display: none;
 <div id="purpose" class="section level2">
 <h2>Purpose</h2>
 <p>This document summarizes the results of a survey completed by
-Springer Nature in 2017.</p>
-<p>The survey results are discussed in <a href="https://doi.org/10.6084/m9.figshare.5975011"><span class="citation">(Stuart, David and Baynes, Grace and Hrynaszkiewicz,
-Iain, and Allin, Katie, and Penny, Dan and Lucraft, Mithu, and Astell,
-Mathias, n.d.)</span></a> and the raw data are found in <a href="https://doi.org/10.6084/m9.figshare.5971387.v1"><span class="citation">(Astell et al. 2018)</span></a>.</p>
+Springer Nature in 2018.</p>
+<p>The survey results are discussed in <a href="https://doi.org/10.6084/m9.figshare.5975011"><span class="citation">(Stuart et al. 2018)</span></a> and the raw data are
+found in <a href="https://doi.org/10.6084/m9.figshare.5971387.v1"><span class="citation">(Astell et al. 2018)</span></a>.</p>
 </div>
 <div id="setup" class="section level2">
 <h2>Setup</h2>
-<pre class="r"><code>require(readxl)
-require(tidyverse)
-library(tidyverse) # for pipe %&gt;% operator</code></pre>
+<p>Ensure that we have the required package dependencies in the local
+environment.</p>
+<pre class="r"><code>require(readxl)</code></pre>
+<pre><code>## Loading required package: readxl</code></pre>
+<pre class="r"><code>require(tidyverse)</code></pre>
+<pre><code>## Loading required package: tidyverse</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6      ✔ purrr   0.3.5 
+## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+## ✔ tidyr   1.2.1      ✔ stringr 1.4.1 
+## ✔ readr   2.1.3      ✔ forcats 0.5.2 
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tidyverse) # for pipe %&gt;% operator</code></pre>
 </div>
 <div id="import" class="section level2">
 <h2>Import</h2>
@@ -400,7 +499,7 @@ file is an Excel spreadsheet in the .xlsx format.</p>
 <p>By default, we do <em>not</em> download the datafile each time we run
 this report. Set <code>params$download_datafile</code> to
 <code>true</code> in the YAML header or run
-<code>rmarkdown::render(&quot;index.Rmd&quot;, params=list(download_datafile=TRUE)</code>
+<code>rmarkdown::render(&quot;index.Rmd&quot;, params=list(download_datafile=TRUE))</code>
 to download the datafile.</p>
 <pre class="r"><code>if (params$download_datafile) {
   message(&quot;Downloading datafile&quot;)
@@ -411,7 +510,7 @@ to download the datafile.</p>
     stop(&quot;Local data file not found: &quot;, params$data_destfile)
   }
 }</code></pre>
-<pre><code>## Downloading datafile</code></pre>
+<pre><code>## Using locally stored file: data/survey.xlsx</code></pre>
 <pre class="r"><code>survey &lt;- readxl::read_xlsx(&quot;data/survey.xlsx&quot;)</code></pre>
 <p>Examine the structure of the imported file.</p>
 <pre class="r"><code>str(survey)</code></pre>
@@ -484,10 +583,9 @@ Challenges for Researchers in Data Sharing - Springer Nature Survey Data
 (Anonymised).”</span> <a href="https://doi.org/10.6084/m9.figshare.5971387.v1">https://doi.org/10.6084/m9.figshare.5971387.v1</a>.
 </div>
 <div id="ref-Stuart_undated-tw" class="csl-entry">
-Stuart, David and Baynes, Grace and Hrynaszkiewicz, Iain, and Allin,
-Katie, and Penny, Dan and Lucraft, Mithu, and Astell, Mathias. n.d.
-<span>“Whitepaper: Practical Challenges for Researchers in Data
-Sharing.”</span> <a href="https://doi.org/10.6084/m9.figshare.5975011">https://doi.org/10.6084/m9.figshare.5975011</a>.
+Stuart, David, Grace Baynes, Hrynaszkiewicz Iain, Allin Katie, Dan
+Penny, Lucraft Mithu, and Mathias Astell. 2018. <span>“Whitepaper:
+Practical Challenges for Researchers in Data Sharing.”</span> <a href="https://doi.org/10.6084/m9.figshare.5975011">https://doi.org/10.6084/m9.figshare.5975011</a>.
 </div>
 </div>
 </div>
@@ -525,6 +623,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
