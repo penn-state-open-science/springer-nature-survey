@@ -1,0 +1,75 @@
+---
+title: "Springer Nature survey analysis"
+author: "Rick Gilmore"
+date: "`r Sys.Date()`"
+bibliography: refs.bib
+output: html_document
+params:
+  download_datafile: false
+  data_destfile: "data/survey.xlsx"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Purpose
+
+This document summarizes the results of a survey completed by Springer Nature in 2017.
+
+The survey results are discussed in [[@Stuart_undated-tw]](https://doi.org/10.6084/m9.figshare.5975011) and the raw data are found in [[@Astell2018-sc]](https://doi.org/10.6084/m9.figshare.5971387.v1).
+
+## Setup
+
+```{r}
+require(readxl)
+require(tidyverse)
+library(tidyverse) # for pipe %>% operator
+```
+
+
+## Import
+
+The data are in figshare.
+Here is the download link from the API: <https://figshare.com/ndownloader/files/10968194>
+The data file is an Excel spreadsheet in the .xlsx format.
+
+By default, we do _not_ download the datafile each time we run this report.
+Set `params$download_datafile` to `true` in the YAML header or run `rmarkdown::render("index.Rmd", params=list(download_datafile=TRUE))` to download the datafile.
+
+```{r}
+if (params$download_datafile) {
+  message("Downloading datafile")
+  download.file(url = "https://figshare.com/ndownloader/files/10968194", destfile = params$data_destfile)
+} else {
+  message("Using locally stored file: ", params$data_destfile)
+  if (!file.exists(params$data_destfile)) {
+    stop("Local data file not found: ", params$data_destfile)
+  }
+}
+```
+
+```{r}
+survey <- readxl::read_xlsx("data/survey.xlsx")
+```
+
+Examine the structure of the imported file.
+
+```{r}
+str(survey)
+```
+
+There are `r dim(survey)[1]` responses and `r dim(survey)[2]` questions.
+
+Here are the questions:
+
+```{r}
+names(survey)
+```
+
+## Clean
+
+## Visualize
+
+## References
