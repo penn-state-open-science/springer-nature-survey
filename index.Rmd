@@ -39,7 +39,7 @@ library(tidyverse) # for pipe %>% operator
 ## Import
 
 The data are in figshare.
-Here is the download link from the API: <https://figshare.com/ndownloader/files/10968194>
+Here is the download link from the figshare API: <https://figshare.com/ndownloader/files/10968194>
 The data file is an Excel spreadsheet in the .xlsx format.
 
 By default, we do _not_ download the datafile each time we run this report.
@@ -392,11 +392,11 @@ copyright <- stringr::str_detect(survey$barrier_copyright_licensing, "copyright"
 costs <- stringr::str_detect(survey$barrier_sharing_cost, "Costs")
 
 survey <- survey %>%
-  dplyr::mutate(., barrier_lack_of_time = lack_time,
-                barrier_organizing_data = org_data,
-                barrier_which_repo = dont_know_repo,
-                barrier_copyright_licensing = copyright,
-                barrier_sharing_cost = costs)
+  dplyr::mutate(., barrier_lack_of_time = if_else(lack_time, TRUE, FALSE, missing = FALSE),
+                barrier_organizing_data = if_else(org_data, TRUE, FALSE, missing = FALSE),
+                barrier_which_repo = if_else(dont_know_repo, TRUE, FALSE, missing = FALSE),
+                barrier_copyright_licensing = if_else(copyright, TRUE, FALSE, missing = FALSE),
+                barrier_sharing_cost = if_else(costs, TRUE, FALSE, missing = FALSE))
 ```
 
 ```{r}
@@ -471,6 +471,7 @@ survey %>%
   aes(x = interest_data_discov_service) +
   geom_bar()
 ```
+
 ### "`r names(survey)[20]`"
 
 Rename.
@@ -579,6 +580,67 @@ head(unique(survey$addtl_info))
 ```{r}
 readr::write_csv(survey, "data/survey_clean.csv")
 message("Saved cleaned data file: ", "data/survey_clean.csv")
+```
+
+## Cross-tabs
+
+### Importance that data is discoverable by field
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = data_discoverable_importance, fill = subject_area) +
+  geom_bar()
+```
+
+### Interest in data deposit service by field
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = interest_data_dep_service, fill = subject_area) +
+  geom_bar()
+```
+
+### Interest in data deposit service for those who do or do not generate data from human participants
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = interest_data_dep_service, fill = generate_human_data) +
+  geom_bar()
+```
+
+
+### Interest in data discoverability service by field
+
+```{r}
+survey %>%
+  ggplot(.) +
+  aes(x = interest_data_discov_service, fill = subject_area) +
+  geom_bar()
+```
+
+### Prevalence of barriers to better data practices by subject area
+
+```{r}
+xtabs(formula = ~ subject_area + barrier_lack_of_time, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ subject_area + barrier_organizing_data, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ subject_area + barrier_which_repo, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ subject_area + barrier_copyright_licensing, data = survey)
+```
+
+```{r}
+xtabs(formula = ~ subject_area + barrier_sharing_cost, data = survey)
 ```
 
 ## References
