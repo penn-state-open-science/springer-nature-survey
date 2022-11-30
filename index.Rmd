@@ -39,7 +39,7 @@ library(tidyverse) # for pipe %>% operator
 ## Import
 
 The data are in figshare.
-Here is the download link from the figshare API: <https://figshare.com/ndownloader/files/10968194>
+Here is the download link from the figshare API: <https://figshare.com/ndownloader/files/10968194>.
 The data file is an Excel spreadsheet in the .xlsx format.
 
 By default, we do _not_ download the datafile each time we run this report.
