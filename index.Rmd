@@ -114,8 +114,8 @@ We'll just show the top of the list.
 ```{r}
 by_country <- survey %>%
   dplyr::group_by(., country) %>%
-  dplyr::summarise(., n_resp = n()) %>%
-  dplyr::arrange(., desc(n_resp))
+  dplyr::summarise(., n_resp_from_country = n()) %>%
+  dplyr::arrange(., desc(n_resp_from_country))
 
 head(by_country) %>%
   knitr::kable(., format = 'html') %>%
