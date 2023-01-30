@@ -37,7 +37,7 @@ rename_survey_cols <- function(survey) {
   names(survey)[8] <- "deposit_repo_always"
   names(survey)[9] <- "aware_should_deposit"
   names(survey)[10] <- "generate_other_types"
-  names(survey)[11] <- "data_discoverable_importance"
+  names(survey)[11] <- "data_discoverable_import"
   names(survey)[12] <- "barrier_lack_of_time"
   names(survey)[13] <- "barrier_organizing_data"
   names(survey)[14] <- "barrier_which_repo"
@@ -94,7 +94,17 @@ clean_subject_area <- function(survey) {
   
   survey %>%
     mutate(., subject_area = tolower(subject_area)) %>%
-    mutate(., subject_area = stringr::str_replace(subject_area, " ", "_"))
+    mutate(., subject_area = stringr::str_replace(subject_area, " ", "_")) %>%
+    mutate(., subject_area = dplyr::recode(subject_area, 
+                                               "medical_sciences" = "med_sci")) %>%
+    mutate(., subject_area = dplyr::recode(subject_area, 
+                                               "biological_sciences" = "bio_sci")) %>%
+    mutate(., subject_area = dplyr::recode(subject_area, 
+                                               "earth_sciences" = "earth_sci")) %>%
+    mutate(., subject_area = dplyr::recode(subject_area, 
+                                               "other_sciences" = "oth_sci")) %>%
+    mutate(., subject_area = dplyr::recode(subject_area, 
+                                               "physical_sciences" = "phys_sci"))
 }
 
 clean_molecular_or_gene <- function(survey) {
@@ -179,9 +189,26 @@ clean_survey_all <- function(survey) {
     clean_want_other_help(.)
 }
 
+change_vars_to_logical <- function(data, vars) {
+  require(dplyr)
+  data %>% 
+    mutate(., across({{vars}}, as.logical))
+}
+
 save_cleaned <- function(survey, fn) {
   require(readr)
   
   readr::write_csv(survey, "data/survey_clean.csv")
   message("Saved cleaned data file: '", fn, "'")
+}
+
+plot_by_sub_area <- function(data, var) {
+  data %>%
+    filter(., !is.na(subject_area), !is.na({{var}})) %>%
+    ggplot() +
+    aes(x = {{var}}, fill = subject_area) +
+    facet_grid(rows = vars(subject_area)) +
+    scale_x_continuous(breaks = 0:10) +
+    theme(strip.text.y = element_blank()) +
+    geom_bar()
 }

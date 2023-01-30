@@ -1,0 +1,178 @@
+---
+title: "Springer Nature survey report"
+author: "Rick Gilmore"
+date: "`r Sys.Date()`"
+bibliography: include/refs.bib
+css: include/styles.css
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+## Purpose
+
+This document summarizes the results of a survey completed by Springer Nature in 2018.
+
+The survey results are discussed in [[@Stuart_undated-tw]](https://doi.org/10.6084/m9.figshare.5975011) and the raw data are found in [[@Astell2018-sc]](https://doi.org/10.6084/m9.figshare.5971387.v1).
+
+## Download
+
+The data are in figshare.
+Here is the download link from the figshare API: <https://figshare.com/ndownloader/files/10968194>.
+The data file is an Excel spreadsheet in the .xlsx format.
+
+## Import and clean
+
+Functions to import the downloaded XLSX file from `data/survey.xlsx` are in `R/functions.R`.
+
+## Re-import cleaned
+
+```{r}
+ns_survey <- readr::read_csv("data/survey_clean.csv", show_col_types = FALSE)
+head(ns_survey)
+```
+
+## Visualize
+
+### N responses by country
+
+There were responses from $n=$ `r length(unique(ns_survey$country))` unique countries.
+
+```{r}
+ns_survey %>%
+  dplyr::group_by(., country) %>%
+  dplyr::summarise(., n_resp_from_country = n()) %>%
+  dplyr::arrange(., desc(n_resp_from_country)) %>%
+  ggplot2::ggplot() +
+  ggplot2::aes(x = n_resp_from_country) +
+  ggplot2::geom_histogram(bins = 100)
+```
+
+Countries with more than 100 respondents include the following:
+
+```{r}
+top_repondents <- ns_survey %>%
+  dplyr::group_by(., country) %>%
+  dplyr::summarise(., n_resp_from_country = n()) %>%
+  dplyr::filter(., n_resp_from_country >= 100) %>%
+  dplyr::arrange(., desc(n_resp_from_country)) %>%
+  dplyr::ungroup(.)
+
+top_repondents %>%
+  knitr::kable(., format = 'html') %>%
+  kableExtra::kable_classic(.)  
+```
+
+### N responses by subject area
+
+```{r}
+ns_survey |>
+  xtabs(formula = ~ subject_area)
+```
+```{r}
+ns_survey %>%
+  dplyr::filter(., !is.na(subject_area)) %>%
+  ggplot() +
+  aes(subject_area, fill = subject_area) +
+  geom_bar() +
+  ylab("N repondents")
+```
+
+## Cross-tabs
+
+### Importance that data are discoverable by field
+
+```{r}
+ns_survey %>%
+  filter(., !is.na(data_discoverable_import), 
+         !is.na(subject_area)) %>%
+  ggplot() +
+  aes(x = data_discoverable_import, fill = subject_area) +
+  facet_grid(rows = vars(subject_area)) +
+  scale_x_continuous(breaks = 0:10) +
+  geom_bar()
+```
+
+```{r}
+mod_discoverable <- lm(formula = data_discoverable_import ~ subject_area, ns_survey)
+anova(mod_discoverable)
+summary(mod_discoverable)
+```
+
+### Interest in data deposit service by field
+
+```{r}
+ns_survey %>%
+  filter(., !is.na(interest_data_dep_service), 
+         !is.na(subject_area)) %>%
+  ggplot(.) +
+  aes(x = interest_data_dep_service, fill = subject_area) +
+  facet_grid(rows = vars(subject_area)) +
+  scale_x_continuous(breaks = 0:10) +
+  geom_bar()
+```
+
+```{r}
+mod_interest_data_serv <- lm(formula = interest_data_dep_service ~ subject_area, ns_survey)
+anova(mod_interest_data_serv)
+summary(mod_interest_data_serv)
+```
+
+### Interest in data deposit service for those who do or do not generate data from human participants
+
+```{r}
+ns_survey %>%
+  dplyr::filter(., !is.na(interest_data_dep_service),
+                !is.na(generate_human_data)) %>%
+  ggplot(.) +
+  aes(x = interest_data_dep_service, fill = generate_human_data) +
+  geom_bar()
+```
+
+```{r}
+mod_interest_data_serv_human_data <- lm(formula = interest_data_dep_service ~ generate_human_data, ns_survey)
+anova(mod_interest_data_serv_human_data)
+summary(mod_interest_data_serv_human_data)
+```
+
+### Interest in data discoverability service by field
+
+```{r}
+ns_survey %>%
+  dplyr::filter(., !is.na(interest_data_discov_service),
+                !is.na(subject_area)) %>%
+  ggplot(.) +
+  aes(x = interest_data_discov_service, fill = subject_area) +
+  geom_bar()
+```
+
+### Prevalence of barriers to better data practices by subject area
+
+```{r}
+ns_survey |> xtabs(formula = ~ subject_area + barrier_lack_of_time)
+
+barriers <- ns_survey %>%
+  dplyr::filter(., !is.na(subject_area)) %>%
+  tidyr::pivot_longer(., cols = c(12:16), names_to = "sharing_barriers", values_to = "sharing_barriers_vals", values_drop_na = TRUE) 
+
+barriers %>%
+  ggplot() +
+  aes(x = sharing_barriers, y = as.numeric(sharing_barriers_vals), fill = sharing_barriers) +
+  geom_col() +
+  ylab("N responses") +
+  coord_flip() +
+  facet_wrap(~subject_area) +
+  theme(legend.position = "none") 
+
+```
+
+## References
+
