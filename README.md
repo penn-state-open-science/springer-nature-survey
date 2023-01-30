@@ -5,7 +5,7 @@ Rick Gilmore wrote the code for this analysis.
 
 ## HTML report
 
-An HTML formatted report can be found [here](https://penn-state-open-science.github.io/springer-nature-survey). [RMarkdown source](index.Rmd).
+An HTML formatted report can be found [here](https://penn-state-open-science.github.io/springer-nature-survey/report.html). [RMarkdown source](report.Rmd).
 
 ## References
 
